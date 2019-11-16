@@ -2,6 +2,8 @@
 
 Сильной чертой C++ является возможность создания высокоэффективного кода (в терминах производительности и расхода энергии), практически, на любой аппаратной платформе. Разработка на C++ с использованием Qt является одним из типовых способов создания приложений для Android. Вместе с тем, на практике обойтись без использования системных и "чужих" Activities в Android невозможно. Это связано с тем, что требующийся функционал либо не доступ в Qt, либо реализуется только системными Activity. Соответственно, задача расширения Qt-приложения Java/Kotlin-кодом кажется насущной.
 
+Описание на [официальном ресурсе](https://doc.qt.io/qt-5/qandroidjniobject.html).
+
 Очень детальное и понятное описание процесса в блоге [KDAD](https://www.kdab.com/qt-android-episode-7/).
 
 # Главное замечание: всё необходимо делать средствами Qt Creator. Применение Android Studio приводит к ошибкам сборки!
@@ -100,3 +102,60 @@ jint x = activity.callMethod<int>("justGiveMeInt", "()I");
 ```cpp
 QAndroidJniObject result = activity.callObjectMethod("justGiveMeObject", "...");
 ```
+
+# Пятый шаг - вызов кода на С++ из Java
+
+В C++ коде необходимо выполнять связывание статических методов некоторого Java-класса с их реализацией на C++. Проще всего это сделать через Java-класс посредник, который может быть реализован, например, так:
+
+```java
+package ru.kerminator.qt5research;
+
+public class AndroidHelper {
+
+    // Регистрируем native-вызов (C++)
+    public static native void useMyNative(String someValue);
+}
+```
+
+Реализация "якорения" на C++ может выглядеть так:
+```java
+static const char* HELPER_CLASS_PATH = "ru/kerminator/qt5research/AndroidHelper";
+
+void MyQmlProxyClass::registerNativeMethods()
+{
+    JNINativeMethod methods[1]
+    {
+        {
+            "useMyNative",
+            "(Ljava/lang/String;)V",
+            reinterpret_cast<void *>(MyQmlProxyClass::useMyNativeMethod)
+        }
+    };
+
+    QAndroidJniObject javaClass = QAndroidJniObject(HELPER_CLASS_PATH);
+
+    QAndroidJniEnvironment env;
+    jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
+
+    env->RegisterNatives(objectClass,
+                         methods,
+                         sizeof(methods) / sizeof(methods[0]));
+    env->DeleteLocalRef(objectClass);
+}
+
+void MyQmlProxyClass::useMyNativeMethod(JNIEnv * env, jobject, jstring strParam)
+{
+    qDebug() << "Called push Method from C++";
+    const char * nativeString = env->GetStringUTFChars(strParam, nullptr);
+    qDebug() << "Received filePath: " << nativeString;
+}
+```
+
+Следует обратить внимание на то, что список методов может быть сколь угодно большим, а имена функций из Java scope могут отличаться от имён методов в конкретном C++ классе.
+
+Соответственно, вызов C++ метода из Java-кода может быть таким:
+
+```java
+AndroidHelper.useMyNative("Hello, from the JAVA-method");
+```
+ 
