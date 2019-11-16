@@ -38,6 +38,7 @@ DISTFILES += \
     android/gradlew \
     android/gradlew.bat \
     android/res/values/libs.xml \
+    android/src/ru/kerminator/qt5research/AndroidHelper.java \
     android/src/ru/kerminator/qt5research/MainActivity.java 
 
 contains(ANDROID_TARGET_ARCH,x86) {

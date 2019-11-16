@@ -7,11 +7,22 @@
 #include <QGuiApplication>
 #include <QDebug>   // Заголовочный файл нужен для обеспечения возможности использовать qDebug()
 
+#include <QAndroidJniEnvironment>
+#include <QAndroidJniObject>
+
+
 // Proxy-класс, через который обмениваются информацией
 // два компонента пользовательского интерфейса (QML)
 class MyQmlProxyClass : public QObject
 {
     Q_OBJECT
+
+public:
+    void registerNativeMethods();
+
+public:
+    static void useMyNativeMethod(JNIEnv * env, jobject, jstring strParam);
+
 public slots:
 
     void cppOnButtonClicked();

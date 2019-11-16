@@ -24,6 +24,9 @@ public class MainActivity extends QtActivity {
 
     public int justGiveMeInt()
     {
+        // Вызываем метод C++ из Java-кода
+        AndroidHelper.useMyNative("Hello, from the JAVA-method");
+
         Log.i("ANDROID_STUDIO", "We are in justGiveMeInt()");
         return 99;
     }

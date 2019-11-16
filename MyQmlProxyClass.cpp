@@ -9,25 +9,57 @@
 
 #include <QtAndroid>
 #include <QtAndroidExtras/QAndroidJniObject>
-#include <QAndroidJniObject>
-#include <QAndroidJniEnvironment>
 #include <QtAndroid>
 #include <jni.h>
 
 #include "MyQmlProxyClass.h"
 
+static const char* MAIN_ACTIVITY_PATH = "ru/kerminator/qt5research/MainActivity";
+static const char* HELPER_CLASS_PATH = "ru/kerminator/qt5research/AndroidHelper";
+
+
+void MyQmlProxyClass::registerNativeMethods()
+{
+    // Список методов может быть сколь угодно большим, а имена функций
+    // для Java scope могут отличаться от имён методов в конкретном классе
+    JNINativeMethod methods[1]
+    {
+        {
+            "useMyNative",
+            "(Ljava/lang/String;)V",
+            reinterpret_cast<void *>(MyQmlProxyClass::useMyNativeMethod)
+        }
+    };
+
+    QAndroidJniObject javaClass = QAndroidJniObject(HELPER_CLASS_PATH);
+
+    QAndroidJniEnvironment env;
+    jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
+
+    env->RegisterNatives(objectClass,
+                         methods,
+                         sizeof(methods) / sizeof(methods[0]));
+    env->DeleteLocalRef(objectClass);
+}
+
+void MyQmlProxyClass::useMyNativeMethod(JNIEnv * env, jobject, jstring strParam)
+{
+    qDebug() << "Called push Method from C++";
+    const char * nativeString = env->GetStringUTFChars(strParam, nullptr);
+    qDebug() << "Received filePath: " << nativeString;
+}
 
 void MyQmlProxyClass::cppOnButtonClicked() {
+
+    qDebug() << "Register native methods";
 
     qDebug() << "Called the C++ slot";
 
     // Ключевая статья: https://www.kdab.com/qt-android-episode-7/
 
-    const char* HELPER_CLASS_PATH = "ru/kerminator/qt5research/MainActivity";
-
     // Вызываем статический метод конкретного класса
     QAndroidJniObject strValue = QAndroidJniObject::callStaticObjectMethod(
-                HELPER_CLASS_PATH,          // Package и класс, метод которого следует вызвать
+                MAIN_ACTIVITY_PATH,         // Package и класс, метод которого следует вызвать
                 "justGiveMeString",         // Имя метода
                 "(I)Ljava/lang/String;",    // Описание параметров
                 10);                        // Значение входных параметров
