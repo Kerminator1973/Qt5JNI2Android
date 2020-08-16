@@ -41,10 +41,11 @@ DISTFILES += \
     android/src/ru/kerminator/qt5research/AndroidHelper.java \
     android/src/ru/kerminator/qt5research/MainActivity.java 
 
-contains(ANDROID_TARGET_ARCH,x86) {
-    ANDROID_PACKAGE_SOURCE_DIR = \
-        $$PWD/android
-}
+# Явно указываем, что нужно собирать ещё и Android Package из исходников
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 HEADERS += \
     MyQmlProxyClass.h
+
+# Указываем на необходимость подключения openSSL
+android: include(C:/Android_SDK/android_openssl/openssl.pri)
