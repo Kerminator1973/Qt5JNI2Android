@@ -38,6 +38,11 @@ android {
 
     buildToolsVersion androidBuildToolsVersion
 
+    defaultConfig {
+        applicationId "ru.kerminator.qt5research"
+        multiDexEnabled true
+    }
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
