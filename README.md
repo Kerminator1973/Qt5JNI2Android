@@ -57,14 +57,14 @@ public class MainActivity extends QtActivity {
 
 Разработчики Qt максимально упростили задачу, предоставив специальзированный API, доступный через заголовочные файлы:
 
-'''cpp
+```cpp
 #include <QtAndroid>
 #include <QtAndroidExtras/QAndroidJniObject>
 #include <QAndroidJniObject>
 #include <QAndroidJniEnvironment>
 #include <QtAndroid>
 #include <jni.h>
-'''
+```
 
 Вызов статических методов и методов конкретного экземпляра класса различаются. Статические методы вызываются так:
 
